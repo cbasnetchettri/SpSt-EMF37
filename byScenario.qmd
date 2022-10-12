@@ -1,0 +1,162 @@
+---
+title: "Data Viz for usacanmex.csv by Scenario"
+author: "Charavee Basnet Chettri"
+format: html
+editor: visual
+---
+
+### Loading packages
+
+```{r}
+library (tidyverse)
+```
+
+### Importing data
+
+```{r}
+r2_data <- read_csv ("/Users/charaveebasnetchettri/Desktop/SpecialStudy/EMF37viz/data-raw/iiasa-db-data/emf37_usacanmex.csv")
+```
+
+### Finding variables
+
+```{r}
+data_vars <- r2_data %>%  
+  group_by (variable) %>% 
+  summarize (total = sum (value))
+```
+
+### Selecting Data
+
+```{r}
+r2_filt <-r2_data %>% 
+  filter (region == "United States",
+          variable == "Emissions|BC" | 
+            variable == "Emissions|CO" |
+            variable == "Emissions|NOx" |
+            variable == "Emissions|PM10" | 
+            variable == "Emissions|PM2.5" | 
+            variable == "Emissions|Sulfur" |
+            variable == "Emissions|VOC")
+```
+
+### Exporting Data
+
+```{r}
+library (writexl)
+
+write_xlsx(r2_filt,"\\Users\\charaveebasnetchettri\\Desktop\\SpecialStudy\\EMF37viz\\spstd_1.xlsx")
+```
+
+### Graphing by Scenario
+
+### BC
+
+```{r}
+r2_filt <- r2_filt %>% 
+  filter (year <= 2050)
+
+scen_BC <- r2_filt %>% 
+  select (-model, -region) %>% 
+  filter (variable == "Emissions|BC") 
+
+ggplot (data = scen_BC, mapping = aes (x = year, y = value))+
+  geom_line(color = "blue")+
+  facet_wrap (~scenario)+
+  labs (title = "1a) BC emissions by Scenario",
+        x = "Year",
+        y = "Emissions|BC (Mt BC/yr)")
+
+```
+
+### CO
+
+```{r}
+
+scen_CO <- r2_filt %>% 
+  select (-model, -region) %>% 
+  filter (variable == "Emissions|CO") 
+
+ggplot (data = scen_CO, mapping = aes (x = year, y = value))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  labs (title = "2a) CO emissions by Scenario",
+        x = "Year",
+        y = "Emissions|CO (Mt BC/yr)")
+```
+
+### PM 2.5
+
+```{r}
+scen_pm25 <- r2_filt %>% 
+  select (-model, -region) %>% 
+  filter (variable == "Emissions|PM2.5") 
+
+ggplot (data = scen_pm25, mapping = aes (x = year, y = value))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  labs (title = "3a) PM 2.5 emissions by Scenario",
+        x = "Year",
+        y = "Emissions|PM2.5 (Mt BC/yr)")
+```
+
+### PM 10
+
+```{r}
+scen_pm10 <- r2_filt %>% 
+  select (-model, -region) %>% 
+  filter (variable == "Emissions|PM10") 
+
+ggplot (data = scen_pm10, mapping = aes (x = year, y = value))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  labs (title = "4a) PM 10 emissions by Scenario",
+        x = "Year",
+        y = "Emissions|PM10 (Mt BC/yr)")
+```
+
+### VOC
+
+```{r}
+scen_voc <- r2_filt %>% 
+  select (-model, -region) %>% 
+  filter (variable == "Emissions|VOC") 
+
+ggplot (data = scen_voc, mapping = aes (x = year, y = value))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  labs (title = "5a) VOC emissions by Scenario",
+        x = "Year",
+        y = "Emissions|VOC (Mt BC/yr)")
+```
+
+### NOx
+
+```{r}
+scen_nox <- r2_filt %>% 
+  select (-model, -region) %>% 
+  filter (variable == "Emissions|NOx")
+
+ggplot (data = scen_nox, mapping = aes (x = year, y = value))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  labs (title = "6a) NOx emissions by Scenario",
+        x = "Year",
+        y = "Emissions|NOx (Mt BC/yr)")
+```
+
+### Sulfur
+
+```{r}
+scen_sulfur <- r2_filt %>% 
+  select (-model, -region) %>% 
+  filter (variable == "Emissions|Sulfur")
+
+ggplot (data = scen_sulfur, mapping = aes (x = year, y = value))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  labs (title = "7a) Sulfur emissions by Scenario",
+        x = "Year",
+        y = "Emissions|Sulfur (Mt BC/yr)")
+```
+
+### 
