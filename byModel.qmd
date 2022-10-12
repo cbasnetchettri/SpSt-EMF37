@@ -1,0 +1,346 @@
+---
+title: "byModel"
+output: pdf_document
+date: "2022-10-05"
+editor_options: 
+  markdown: 
+    wrap: 72
+---
+
+```{r}
+# load sources
+source("packages.R")
+
+# loading packages
+library(targets)
+library(tarchetypes)
+library(tidyverse)
+library(dplyr)
+library(datasets)
+library(ggplot2)
+
+# importing data
+r2_data <- read_csv ("/Users/abigailmorganomeara/Laqb/EMF37viz/data-raw/iiasa-db-data/emf37_usacanmex.csv")
+
+# finding variables 
+#data_vars <- r2_data %>%  
+  #group_by (variable) %>% 
+  #summarize (total = sum (value))
+
+rename(r2_data, Regions = region)
+
+# filtering variables and selecting data
+# NOx, SOx, CO, BC, VOCs, PM 10, PM 2.5
+
+r2_filt <- r2_data
+  filter (r2_data,
+             region == "United States",
+             variable == "Emissions|BC" |
+            variable == "Emissions|CO" |
+            variable == "Emissions|PM10" | 
+            variable == "Emissions|PM2.5" | 
+            variable == "Emissions|Sulfur" |
+            variable == "Emissions|VOC"
+          )
+r2_filt
+
+#graphing setup
+r2_graph <- r2_filt %>% 
+  group_by (model, scenario, variable, unit, year) %>% 
+  summarize (total = sum (value))
+```
+
+```{r}
+#example model 
+stacked_bar_grid_fn <- function(df, data_list, mapping_list) {
+  p <- ggplot(df, aes(x = .data[[data_list$x]], y = .data[[data_list$y]])) +
+    geom_col(aes(fill = .data[[data_list$color]])) +
+    facet_grid(rows = vars(.data[[data_list$facet1]]), cols = vars(.data[[data_list$facet2]]),
+               space = "free_x", scales = mapping_list$scales) +
+    labs(title = mapping_list$title,
+         #x = mapping_list$xlab,
+         x = "",
+         y = mapping_list$ylab,
+         fill = "") +
+    theme_emf() +
+    theme(axis.text.x = element_text(angle = 90, hjust=1)) +
+    scale_subpalette(mapping_list$palettes, mapping_list$model_color_palette)
+
+```
+
+```{r}
+# data_list: data lists for input into Bayesian models
+# mapping_list: return a data frame created by row-binding and column-binding respectively
+
+#df: r2_graph
+# data_list: total
+#mapping_list : year
+
+stacked_bar_grid_fn <- function(r2_graph, total, year) {
+  p <- ggplot(r2_graph, aes(x = r2_graph[[total$x]], y = r2_graph[[total$y]])) +
+    geom_col(aes(fill = r2_graph[[total$color]])) +
+    facet_grid(rows = vars(r2_graph[[total$facet1]]), cols = vars(r2_graph[[total$facet2]]),
+               space = "free_x", scales = year$scales) +
+    labs(title = year$title,
+         #x = year$xlab,
+         x = "",
+         y = year$ylab,
+         fill = "") +
+    theme_emf() +
+    theme(axis.text.x = element_text(angle = 90, hjust=1)) +
+    scale_subpalette(year$palettes, year$model_color_palette)
+  
+  return(p)
+}
+#it ran, didn't produce a "graph" just ran as a function, produced in environment 
+
+stacked_bar_grid_fn
+```
+
+```{r}
+config = list(
+  #   round_num = 2,
+  #   scen_mapping = read_scen_mapping(scen_mapping_csv),
+  #   template = emf_template,
+  #   calculated_var = all_calculated,
+  #   shape_map = data.frame(model = c("ADAGE","AEO2020","AnyMOD","CTUS-NEMS","EIA_Historic",
+  #                                    "EIA_STEO","ENERGY2020","EPA-GHGI","EPA-TIMES","EPS","FARM","GCAM",
+  #                                    "GCAM-USA","gTech","MARKAL-NETL","MER","NATEM","TEMPO",
+  #                                    "US-REGEN"),
+  #                          abbrev = c("A","B","D","C","H","I","P","T","E","F","G","S","J",
+  #                                     "M","R","N","O","U","Z"),
+  #                          ref_abbrev = tolower(c("A","B","D","C","H","I","P","T","E","F",
+  #                                                 "G","S","J","M","R","N","O","U","Z"))),
+  # 
+  #   # models
+  #   models = c("ADAGE","AEO2020","AEO2021","AEO2022","AnyMOD",
+  #              "CTUS-NEMS",
+  #              "EIA_Historic","EIA_STEO","EPA-GHGI","NCS-GHGI","ENERGY2020", "EPA-TIMES","EPS",
+  #              "FARM",
+  #              "GCAM","GCAM-USA","gTech",
+  #              "MARKAL-NETL","MER",
+  #              "NATEM",
+  #              "TEMPO",
+  #              "US-REGEN","USREP-ReEDS"),
+  #   models_benchmark = c("AEO2020","EPA-GHGI","EIA_Historic","EIA_STEO","ADAGE","AnyMOD","CTUS-NEMS","ENERGY2020","EPA-TIMES","EPS","FARM","GCAM",
+  #                   "GCAM-USA","gTech","MA3T","MARKAL-NETL","NATEM","Pathways","Scout","TEMPO","US-REGEN","USREP-ReEDS"),
+  #   benchmark = "AEO2020",
+  #   models_r2 = c("EPA-TIMES","EPS","GCAM","GCAM-USA","MARKAL-NETL","NATEM"),
+  #   models_main = c("AEO2020","ADAGE","AnyMOD","EPA-TIMES","ENERGY2020","EPS","GCAM",
+  #                   "GCAM-USA","gTech","MA3T","MARKAL-NETL","NATEM","TEMPO","USREP-ReEDS"),
+  #   # models_main = c("ADAGE","AnyMOD","CTUS-NEMS","EPA-TIMES","ENERGY2020","EPS","FARM","GCAM",
+  #   #                 "GCAM-USA","gTech","MA3T","MARKAL-NETL","NATEM","Pathways","Scout","TEMPO","US-REGEN","USREP-ReEDS"),
+  #   models_stack = c("CTUS-NEMS","ENERGY2020","EPA-TIMES","EPS","FARM","GCAM","MA3T",
+  #                   "GCAM-USA","gTech","MARKAL-NETL","Pathways","Scout","TEMPO","US-REGEN","USREP-ReEDS"),
+  #   models_diff = c("CTUS-NEMS","ENERGY2020","EPA-TIMES","EPS","GCAM",
+  #                    "GCAM-USA","MARKAL-NETL","Scout","TEMPO","US-REGEN","USREP-ReEDS"),
+  #   models_sm = c("CTUS-NEMS","ENERGY2020","EPA-TIMES","EPS", "GCAM",
+  #                 "GCAM-USA", "MARKAL-NETL","US-REGEN"),
+  # 
+  #   # scenarios
+  #   all_scenarios = c(
+  #     ## NT
+  #     "NT.Ref","NT.Adv","NT.BSG.Adv","NT.ISG.Adv","NT.TSG.Adv","NT.CMSG.Adv",
+  #     ## 0by50
+  #     "0by50.Ref","0by50.Adv","0by50.BSG.Adv","0by50.CMSG.Adv","0by50.ISG.Adv","0by50.TSG.Adv",
+  #     # CMSG
+  #     "0by50.CMSG1","0by50.CMSG2","0by50.CMSG3","0by50.CMSG4",
+  #     # ISG
+  #     "0by50.ISG1","0by50.ISG2","0by50.ISG3","0by50.ISG4",
+  #     # TSG
+  #     "0by50.TSG1","0by50.TSG2","0by50.TSG3","0by50.TSG4",
+  #     # BSG
+  #     "0by50.BSG1","0by50.BSG2",
+  #     ## 0GHGby50
+  #     "0GHGby50.Ref","0GHGby50.Adv",
+  #     ## 0by60
+  #     "0by60.Ref","0by60.Adv","0by60.CMSG2","0by60.CMSG3","0by60.CMSG4",
+  #     ## 0by80
+  #     "0by80.Ref","0by80.Adv","0by80.CMSG2","0by80.CMSG3","0by80.CMSG4"),
+  # 
+  #   main_scenarios = c("NT.Ref", "0by50.Ref","0by50.Adv",
+  #                      "0by50.BSG.Adv","0by50.CMSG.Adv","0by50.ISG.Adv","0by50.TSG.Adv"),
+  # 
+  #   sm_scenarios = c("NT.Ref", "0by50.Ref","0by50.Adv"),
+  # 
+  #   min_scenarios = c("NT.Ref", "0by50.Ref"),
+  # 
+  #   scatter_scenarios = c("0by50.Ref","0by50.Adv","0by50.CMSG.Adv","0by50.ISG.Adv","0by50.TSG.Adv"),
+  # 
+  #   tsg_scatter_scenarios = c("0by50.TSG.Adv","0by50.TSG1","0by50.TSG2","0by50.TSG3","0by50.TSG4"),
+  # 
+  #   nz50_all = c("0by50.Ref","0by50.Adv","0by50.BSG.Adv","0by50.CMSG.Adv","0by50.ISG.Adv","0by50.TSG.Adv"),
+  #   nz50_scenarios = c("0by50.Ref","0by50.Adv"),
+  #   nz50_sg_scenarios = c("0by50.BSG.Adv","0by50.CMSG.Adv","0by50.ISG.Adv","0by50.TSG.Adv"),
+  #   bsg_scenarios = c("NT.BSG.Adv","0by50.BSG.Adv",
+  #                     "0by50.BSG1","0by50.BSG2"),
+  #   overview_scenarios = c("NT.Ref", "0by50.Ref","0by50.Adv",
+  #                             "0by50.BSG.Adv","0by50.CMSG.Adv","0by50.ISG.Adv","0by50.TSG.Adv"),
+  #   bsg_presentation = c("NT.Ref","NT.BSG.Adv","0by50.Ref","0by50.Adv",
+  #                        "0by50.BSG.Adv","0by50.BSG1","0by50.BSG2"),
+  #   cmsg_scenarios = c("NT.CMSG.Adv","0by50.CMSG.Adv",
+  #                      "0by50.CMSG1","0by50.CMSG2","0by50.CMSG3","0by50.CMSG4",
+  #                      "0by60.CMSG2","0by60.CMSG3","0by60.CMSG4",
+  #                      "0by80.CMSG2","0by80.CMSG3","0by80.CMSG4"),
+  #   isg_scenarios = c("NT.ISG.Adv","0by50.ISG.Adv",
+  #                     "0by50.ISG1","0by50.ISG2","0by50.ISG3","0by50.ISG4"),
+  #   tsg_scenarios = c("NT.Ref", "0by50.Ref","0by50.Adv",
+  #                     "0by50.TSG.Adv","0by50.TSG1","0by50.TSG2","0by50.TSG3","0by50.TSG4"),
+  #   # time intervals
+  #   default10 = seq(2020, 2050, by = 10),
+  #   default5 = seq(2020, 2050, by = 5),
+  #   default_2020_2050 = c(2020, 2050),
+  #   # regions
+  #   default_regions = c("United States"),
+  #   usrr_regions = c("AK","CA","FL","MOUNT","NCENT","NEAST","NENGL",
+  #                    "NY","PACIF","SCENT","SEAST","TX","USA")
+  # )
+``` #CONFIG
+
+```{r}
+# full processing based on figure requests + create pdf of plots
+
+#df: r2_graph
+#presentation_title:
+#presentation_plot_type:
+#config: EDIT
+
+#example: prez_sb = create_graph("prez", "stacked_bar", config, emf_data_long, figmap_prez_stackbar),
+
+create_graph <- function(presentation_title, stacked_bar_grid_fn, config, emf37_usacanmex, figmap) 
+  
+pdf_plots(overall_path, r2_graph, presentation_title, stacked_bar_grid_fn, subpalettes, config)
+
+```
+
+```{r}
+#BC by model
+model_BC <- r2_filt %>% 
+  select (-scenario, - region) %>% 
+  filter (variable == "Emissions|BC")
+
+ggplot (data = model_BC, mapping = aes (x = year, y = value))+
+  geom_point()+
+  facet_wrap (~model)+
+  labs (title = "BC Emissions by Model",
+        x = "Year",
+        y = "Emissions|BC (Mt BC/yr)")
+
+```
+
+```{r}
+#CO by model
+model_CO <- r2_filt %>% 
+  select (-scenario, - region) %>% 
+  filter (variable == "Emissions|CO")
+
+ggplot (data = model_CO, mapping = aes (x = year, y = value))+
+  geom_point()+
+  facet_wrap (~model)+
+  labs (title = "CO Emissions by Model",
+        x = "Year",
+        y = "Emissions|CO (Mt CO/yr)")
+
+```
+
+```{r}
+#PM10 by model
+model_PM10 <- r2_filt %>% 
+  select (-scenario, - region) %>% 
+  filter (variable == "Emissions|PM10")
+
+ggplot (data = model_PM10, mapping = aes (x = year, y = value))+
+  geom_point()+
+  facet_wrap (~model)+
+  labs (title = "PM10 Emissions by Model",
+        x = "Year",
+        y = "Emissions|PM10 (Mt PM10/yr)")
+
+```
+
+```{r}
+#PM2.5 by model
+model_PM2.5 <- r2_filt %>% 
+  select (-scenario, - region) %>% 
+  filter (variable == "Emissions|PM2.5")
+
+ggplot (data = model_PM2.5, mapping = aes (x = year, y = value))+
+  geom_point()+
+  facet_wrap (~model)+
+  labs (title = "PM2.5 Emissions by Model",
+        x = "Year",
+        y = "Emissions|PM2.5 (Mt PM2.5/yr)")
+```
+
+```{r}
+#sulfur by model
+model_SO2 <- r2_filt %>% 
+  select (-scenario, - region) %>% 
+  filter (variable == "Emissions|Sulfur")
+
+ggplot (data = model_SO2, mapping = aes (x = year, y = value))+
+  geom_point()+
+  facet_wrap (~model)+
+  labs (title = "PM2.5 Emissions by Model",
+        x = "Year",
+        y = "Emissions|Sulfur (Mt SO2/yr)")
+```
+
+```{r}
+#VOC by model
+model_VOC <- r2_filt %>% 
+  select (-scenario, - region) %>% 
+  filter (variable == "Emissions|VOC")
+
+ggplot (data = model_VOC, mapping = aes (x = year, y = value))+
+  geom_point()+
+  facet_wrap (~model)+
+  labs (title = "VOC Emissions by Model",
+        x = "Year",
+        y = "Emissions|VOC (Mt VOC/yr)")
+```
+
+
+```{r}
+#BC by scenario
+scenario_BC <- r2_filt %>% 
+  select (-model, - region) %>% 
+  filter (variable == "Emissions|BC")
+
+ggplot (data = scenario_BC, mapping = aes (x = year, y = value))+
+  geom_point()+
+  facet_wrap (~scenario)+
+  labs (title = "BC Emissions by Model",
+        x = "Year",
+        y = "Emissions|BC (Mt BC/yr)")
+
+```
+
+
+
+
+
+
+
+
+
+graph - here's black carbon 0by50, here's it in the policy case collapse
+from entire grid to just a few graphs simplification of the graphing
+small steps
+
+don't look for perfect graphs, just simplification dot plots, bar graphs
+-- don't make too complicated with multiple graphs on one plot
+
+per scenario / per model
+
+year - x-axis, title - reference/scenario, variable - y-axis each model
+has own time trajectory
+
+titles are the scenario showing the graphs of parameters
+
+date stamp - when graphs are downloaded / worked with - old or new data
+dependent
+
+------------------------------------------------------------------------
+
+filtered version or file and some graphs!
