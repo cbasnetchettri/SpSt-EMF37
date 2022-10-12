@@ -14,7 +14,8 @@ library (tidyverse)
 ### Importing data
 
 ```{r}
-r2_data <- read_csv ("/Users/charaveebasnetchettri/Desktop/SpecialStudy/EMF37viz/data-raw/iiasa-db-data/emf37_usacanmex.csv")
+r2_data <- read_csv ("usacanmex_1.csv")
+
 ```
 
 ### Finding variables
@@ -36,15 +37,8 @@ r2_filt <-r2_data %>%
             variable == "Emissions|PM10" | 
             variable == "Emissions|PM2.5" | 
             variable == "Emissions|Sulfur" |
-            variable == "Emissions|VOC")
-```
-
-### Exporting Data
-
-```{r}
-library (writexl)
-
-write_xlsx(r2_filt,"\\Users\\charaveebasnetchettri\\Desktop\\SpecialStudy\\EMF37viz\\spstd_1.xlsx")
+            variable == "Emissions|VOC") %>% 
+  filter (year <= 2050)
 ```
 
 ### Graphing by Scenario
@@ -52,8 +46,6 @@ write_xlsx(r2_filt,"\\Users\\charaveebasnetchettri\\Desktop\\SpecialStudy\\EMF37
 ### BC
 
 ```{r}
-r2_filt <- r2_filt %>% 
-  filter (year <= 2050)
 
 scen_BC <- r2_filt %>% 
   select (-model, -region) %>% 
