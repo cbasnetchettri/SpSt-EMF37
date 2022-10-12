@@ -9,7 +9,7 @@ editor_options:
 
 ```{r}
 # load sources
-source("packages.R")
+#source("packages.R")
 
 # loading packages
 library(targets)
@@ -32,17 +32,16 @@ rename(r2_data, Regions = region)
 # filtering variables and selecting data
 # NOx, SOx, CO, BC, VOCs, PM 10, PM 2.5
 
-r2_filt <- r2_data
-  filter (r2_data,
-             region == "United States",
-             variable == "Emissions|BC" |
+r2_filt <-r2_data %>% 
+  filter (region == "United States",
+          variable == "Emissions|BC" | 
             variable == "Emissions|CO" |
+            variable == "Emissions|NOx" |
             variable == "Emissions|PM10" | 
             variable == "Emissions|PM2.5" | 
             variable == "Emissions|Sulfur" |
-            variable == "Emissions|VOC"
-          )
-r2_filt
+            variable == "Emissions|VOC") %>% 
+  filter (year <= 2050)
 
 #graphing setup
 r2_graph <- r2_filt %>% 
@@ -301,6 +300,8 @@ ggplot (data = model_VOC, mapping = aes (x = year, y = value))+
 ```
 
 
+<<<<<<< HEAD
+=======
 ```{r}
 #BC by scenario
 scenario_BC <- r2_filt %>% 
@@ -315,12 +316,6 @@ ggplot (data = scenario_BC, mapping = aes (x = year, y = value))+
         y = "Emissions|BC (Mt BC/yr)")
 
 ```
-
-
-
-
-
-
 
 
 
