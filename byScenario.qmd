@@ -43,12 +43,14 @@ r2_filt <-r2_data %>%
   filter (grepl ("R2", scenario))
 ```
 
+### Four Variable Graph 
+
 ```{r}
 
 ggplot (data = r2_filt, mapping = aes (x = year, y = value, color = variable))+
   geom_line()+
   facet_wrap (~scenario)+
-  labs (title = "Emissions of Each Scenario by 2050 by Scenario",
+  labs (title = "Emissions of Each Pollutant by 2050 by Scenario",
         subtitle = "Date: Oct 13, 2022",
         x = "Year",
         y = "Emissions(Mt BC/yr)",
@@ -58,7 +60,7 @@ ggplot (data = r2_filt, mapping = aes (x = year, y = value, color = variable))+
 
 \-\-\-\-\-\-\-\--
 
-### Old Graphs 
+### Old Graphs
 
 ### BC
 
