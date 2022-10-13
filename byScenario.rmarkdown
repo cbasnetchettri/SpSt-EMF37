@@ -5,20 +5,26 @@ format: html
 editor: visual
 ---
 
+
 ### Loading packages
+
 
 ```{r}
 library (tidyverse)
 ```
 
+
 ### Importing data
+
 
 ```{r}
 r2_data <- read_csv ("usacanmex_1.csv")
 
 ```
 
+
 ### Finding variables
+
 
 ```{r}
 data_vars <- r2_data %>%  
@@ -26,7 +32,9 @@ data_vars <- r2_data %>%
   summarize (total = sum (value))
 ```
 
+
 ### Selecting Data
+
 
 ```{r}
 r2_filt <-r2_data %>% 
@@ -38,29 +46,14 @@ r2_filt <-r2_data %>%
             variable == "Emissions|PM2.5" | 
             variable == "Emissions|Sulfur" |
             variable == "Emissions|VOC") %>% 
-  filter (year <= 2050) %>% 
-  # whatever that includes R2
-  filter (grepl ("R2", scenario))
+  filter (year <= 2050)
 ```
 
-```{r}
 
-ggplot (data = r2_filt, mapping = aes (x = year, y = value, color = variable))+
-  geom_line()+
-  facet_wrap (~scenario)+
-  labs (title = "Emissions of Each Scenario by 2050 by Scenario",
-        subtitle = "Date: Oct 13, 2022",
-        x = "Year",
-        y = "Emissions(Mt BC/yr)",
-        color = "Pollutant")
-
-```
-
-\-\-\-\-\-\-\-\--
-
-### Old Graphs 
+### Graphing by Scenario
 
 ### BC
+
 
 ```{r}
 
@@ -68,16 +61,18 @@ scen_BC <- r2_filt %>%
   select (-model, -region) %>% 
   filter (variable == "Emissions|BC") 
 
-ggplot (data = scen_BC, mapping = aes (x = year, y = value))+
+ggplot (data = scen_BC, mapping = aes (x = year, y = value, color = scenario))+
   geom_line()+
-  facet_wrap (~scenario)+
+  # facet_wrap (~scenario)+
   labs (title = "1a) BC emissions by Scenario",
         x = "Year",
         y = "Emissions|BC (Mt BC/yr)")
 
 ```
 
+
 ### CO
+
 
 ```{r}
 
@@ -93,7 +88,9 @@ ggplot (data = scen_CO, mapping = aes (x = year, y = value))+
         y = "Emissions|CO (Mt BC/yr)")
 ```
 
+
 ### PM 2.5
+
 
 ```{r}
 scen_pm25 <- r2_filt %>% 
@@ -108,7 +105,9 @@ ggplot (data = scen_pm25, mapping = aes (x = year, y = value))+
         y = "Emissions|PM2.5 (Mt BC/yr)")
 ```
 
+
 ### PM 10
+
 
 ```{r}
 scen_pm10 <- r2_filt %>% 
@@ -123,7 +122,9 @@ ggplot (data = scen_pm10, mapping = aes (x = year, y = value))+
         y = "Emissions|PM10 (Mt BC/yr)")
 ```
 
+
 ### VOC
+
 
 ```{r}
 scen_voc <- r2_filt %>% 
@@ -138,7 +139,9 @@ ggplot (data = scen_voc, mapping = aes (x = year, y = value))+
         y = "Emissions|VOC (Mt BC/yr)")
 ```
 
+
 ### NOx
+
 
 ```{r}
 scen_nox <- r2_filt %>% 
@@ -153,7 +156,9 @@ ggplot (data = scen_nox, mapping = aes (x = year, y = value))+
         y = "Emissions|NOx (Mt BC/yr)")
 ```
 
+
 ### Sulfur
+
 
 ```{r}
 scen_sulfur <- r2_filt %>% 
@@ -168,4 +173,6 @@ ggplot (data = scen_sulfur, mapping = aes (x = year, y = value))+
         y = "Emissions|Sulfur (Mt BC/yr)")
 ```
 
+
 ### 
+
