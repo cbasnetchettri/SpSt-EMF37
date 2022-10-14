@@ -212,6 +212,20 @@ pdf_plots(overall_path, r2_graph, presentation_title, stacked_bar_grid_fn, subpa
 
 ```
 
+4 variables - year, value, variable, model
+
+```{r}
+#all variables
+ggplot (data = r2_filt, mapping = aes (x = year, y = value, color = variable))+
+  geom_line()+
+  facet_wrap (~model)+
+  labs (title = "Emissions by Model",
+        x = "Year",
+        y = "Emissions (Mt/yr)")
+```
+
+
+
 ```{r}
 #BC by model
 model_BC <- r2_filt %>% 
@@ -219,7 +233,7 @@ model_BC <- r2_filt %>%
   filter (variable == "Emissions|BC")
 
 ggplot (data = model_BC, mapping = aes (x = year, y = value))+
-  geom_point()+
+  geom_line()+
   facet_wrap (~model)+
   labs (title = "BC Emissions by Model",
         x = "Year",
@@ -234,7 +248,7 @@ model_CO <- r2_filt %>%
   filter (variable == "Emissions|CO")
 
 ggplot (data = model_CO, mapping = aes (x = year, y = value))+
-  geom_point()+
+  geom_line()+
   facet_wrap (~model)+
   labs (title = "CO Emissions by Model",
         x = "Year",
@@ -249,7 +263,7 @@ model_PM10 <- r2_filt %>%
   filter (variable == "Emissions|PM10")
 
 ggplot (data = model_PM10, mapping = aes (x = year, y = value))+
-  geom_point()+
+  geom_line()+
   facet_wrap (~model)+
   labs (title = "PM10 Emissions by Model",
         x = "Year",
@@ -264,7 +278,7 @@ model_PM2.5 <- r2_filt %>%
   filter (variable == "Emissions|PM2.5")
 
 ggplot (data = model_PM2.5, mapping = aes (x = year, y = value))+
-  geom_point()+
+  geom_line()+
   facet_wrap (~model)+
   labs (title = "PM2.5 Emissions by Model",
         x = "Year",
@@ -278,7 +292,7 @@ model_SO2 <- r2_filt %>%
   filter (variable == "Emissions|Sulfur")
 
 ggplot (data = model_SO2, mapping = aes (x = year, y = value))+
-  geom_point()+
+  geom_line()+
   facet_wrap (~model)+
   labs (title = "PM2.5 Emissions by Model",
         x = "Year",
@@ -292,7 +306,7 @@ model_VOC <- r2_filt %>%
   filter (variable == "Emissions|VOC")
 
 ggplot (data = model_VOC, mapping = aes (x = year, y = value))+
-  geom_point()+
+  geom_line()+
   facet_wrap (~model)+
   labs (title = "VOC Emissions by Model",
         x = "Year",
@@ -300,7 +314,7 @@ ggplot (data = model_VOC, mapping = aes (x = year, y = value))+
 ```
 
 
-<<<<<<< HEAD
+
 =======
 ```{r}
 #BC by scenario
@@ -309,7 +323,7 @@ scenario_BC <- r2_filt %>%
   filter (variable == "Emissions|BC")
 
 ggplot (data = scenario_BC, mapping = aes (x = year, y = value))+
-  geom_point()+
+  geom_line()+
   facet_wrap (~scenario)+
   labs (title = "BC Emissions by Model",
         x = "Year",
@@ -319,6 +333,7 @@ ggplot (data = scenario_BC, mapping = aes (x = year, y = value))+
 
 
 
+Notes from Friday Meeting: October 7
 graph - here's black carbon 0by50, here's it in the policy case collapse
 from entire grid to just a few graphs simplification of the graphing
 small steps
