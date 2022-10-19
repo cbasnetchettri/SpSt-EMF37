@@ -15,38 +15,172 @@ library (tidyverse)
 
 ```{r}
 r2_data <- read_csv ("usacanmex_1.csv")
-
 ```
 
-### Finding variables
-
-```{r}
-data_vars <- r2_data %>%  
-  group_by (variable) %>% 
-  summarize (total = sum (value))
-```
-
-### Selecting Data 
+### Selecting Data
 
 ```{r}
 r2_filt <-r2_data %>% 
   filter (region == "United States",
           variable == "Emissions|BC" | 
-            variable == "Emissions|CO" |
-            variable == "Emissions|NOx" |
-            variable == "Emissions|PM10" | 
-            variable == "Emissions|PM2.5" | 
-            variable == "Emissions|Sulfur" |
-            variable == "Emissions|VOC") %>% 
+          variable == "Emissions|CO" |
+          variable == "Emissions|NOx" |
+          variable == "Emissions|PM10" | 
+          variable == "Emissions|PM2.5" | 
+          variable == "Emissions|Sulfur" |
+          variable == "Emissions|VOC") %>% 
   filter (year <= 2050) %>% 
-  # whatever that includes R2
-  filter (grepl ("R2", scenario))
+  filter (scenario != "Nt.Ref.R2") %>% 
+  filter (grepl ("R2", scenario)) %>%
+  filter (!grepl ("TSG", scenario )) %>%
+  filter (!grepl ("CMS", scenario)) %>%
+  filter (!grepl ("ISG", scenario)) %>%
+  filter (!grepl ("BSG", scenario))
+
+r2_filt_2 <- r2_filt %>% 
+  group_by (model, scenario, variable, year) %>% 
+  summarize (total = sum (value))
+
+# scenario == "NT.Ref"|
+#           scenario == "0by50.Ref"|
+#           scenario == "0by50.Adv"|
+#           scenario == "0by50.BSG.Adv"|
+#           scenario == "0by50.CMSG.Adv"|
+#           scenario == "0by50.ISG.Adv"|
+#           scenario == "0by50.TSG.Adv"
 ```
 
-### Four Variable Graph 
+```{r}
+ggplot (data = r2_filt, mapping = aes (x = year, 
+                                       y = value, 
+                                       color = scenario))+
+  geom_line()+
+  facet_wrap (~variable)+
+  labs (title = "Emissions of Each Pollutant by 2050 by Scenario",
+          subtitle = "Date: Oct 18, 2022",
+          x = "Year",
+          y = "Emissions(Mt BC/yr)",
+          color = "Pollutant")
+```
+
+```{r}
+ggplot (data = r2_filt_2, mapping = aes (x = year, 
+                                       y = total, 
+                                       color = variable))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  labs (title = "Emissions of Each Pollutant by 2050 by Scenario",
+          subtitle = "Date: Oct 18, 2022",
+          x = "Year",
+          y = "Emissions(Mt BC/yr)",
+          color = "Pollutant")
+```
+
+```{r}
+ggplot (data = r2_filt, mapping = aes (x = year, 
+                                       y = value, 
+                                       color = variable))+
+  geom_line()+
+  facet_wrap (~model)+
+  labs (title = "Emissions of Each Pollutant by 2050 by Scenario",
+          subtitle = "Date: Oct 18, 2022",
+          x = "Year",
+          y = "Emissions(Mt BC/yr)",
+          color = "Pollutant")
+```
+
+```{r}
+ggplot (data = r2_filt, mapping = aes (x = year, 
+                                       y = value, 
+                                       color = variable))+
+  geom_line(aes(y=value))+
+  geom_line (aes (y=scenario))+
+  scale_y_continuous (
+    name = "Emissions(Mt BC/yr)",
+    sec.axis = sec_axis (trans=~.*1, name = "Scenario")
+  )+
+  facet_wrap (~model)+
+  labs (title = "Emissions of Each Pollutant by 2050 by Scenario",
+          subtitle = "Date: Oct 18, 2022",
+          x = "Year",
+          y = "Emissions(Mt BC/yr)",
+          color = "Pollutant")
+```
+
+
+```{r}
+ggplot (data = r2_filt, mapping = aes (x = year, y = value, color = scenario))+
+    geom_line()+
+    facet_wrap (~variable)+
+    labs (title = "Emissions of Each Pollutant by 2050 by Scenario",
+          subtitle = "Date: Oct 18, 2022",
+          x = "Year",
+          y = "Emissions(Mt BC/yr)",
+          color = "Pollutant")
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+### Four Variable Graph
 
 ```{r}
 
+ggplot (data = r2_filt, mapping = aes (x = year, y = value, color = scenario))+
+  geom_point()+
+  facet_wrap (~variable)+
+  labs (title = "Emissions of Each Pollutant by 2050 by Scenario",
+        subtitle = "Date: Oct 13, 2022",
+        x = "Year",
+        y = "Emissions(Mt BC/yr)",
+        color = "Pollutant")
+
+```
+
+```{r}
+
+```
+
+```{r}
+
+
+r2_filt %>% 
+  filter(scenario == "0by50.Ref.R2") %>% 
+  ggplot (mapping = aes (x = year, y = value))+
+    geom_point()+
+    facet_wrap (~variable)+
+    labs (title = "Emissions of Each Pollutant by 2050 by Scenario",
+          subtitle = "Date: Oct 13, 2022",
+          x = "Year",
+          y = "Emissions(Mt BC/yr)",
+          color = "Pollutant")
+```
+
+```{r}
+r2_filt %>% 
+  filter(scenario == "0by50.Ref.R2",
+         value != 0) %>% 
+  ggplot (mapping = aes (x = year, y = value))+
+    geom_point()+
+    facet_wrap (~variable)+
+    labs (title = "Emissions of Each Pollutant by 2050 by Scenario",
+          subtitle = "Date: Oct 13, 2022",
+          x = "Year",
+          y = "Emissions(Mt BC/yr)",
+          color = "Pollutant")
+```
+
+
+```{r}
 ggplot (data = r2_filt, mapping = aes (x = year, y = value, color = variable))+
   geom_line()+
   facet_wrap (~scenario)+
@@ -55,7 +189,6 @@ ggplot (data = r2_filt, mapping = aes (x = year, y = value, color = variable))+
         x = "Year",
         y = "Emissions(Mt BC/yr)",
         color = "Pollutant")
-
 ```
 
 \-\-\-\-\-\-\-\--

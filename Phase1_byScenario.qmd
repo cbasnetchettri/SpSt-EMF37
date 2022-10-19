@@ -1,0 +1,145 @@
+---
+title: "Phase1_byScenario"
+format: pdf
+editor: visual
+---
+
+### Loading packages
+
+```{r}
+library (tidyverse)
+```
+
+### Importing data
+
+```{r}
+r2_data <- read_csv ("usacanmex_1.csv")
+```
+
+```{r}
+models <- r2_data %>% 
+  group_by (model) %>% 
+  summarize (total = sum (value))
+```
+
+### Selecting Data
+
+```{r}
+r2_filt <-r2_data %>% 
+  filter (scenario == "NT.Ref.R2"|
+          scenario == "0by50.Ref.R2") %>% 
+  filter (year <= 2050)
+
+```
+
+### Plots 
+
+#### NOx
+
+```{r}
+nox <- r2_filt %>% 
+  filter (variable == "Emissions|NOx")
+
+ggplot (data = nox, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  labs (title = "NOx emissions",
+        subtitle = "Date: Oct 19, 2022",
+        x = "Year",
+        y = "Emissions|NOx (Mt BC/yr)",
+        color = "Model")
+```
+
+#### Sulfur 
+
+```{r}
+sulfur <- r2_filt %>% 
+  filter (variable == "Emissions|Sulfur")
+
+ggplot (data = sulfur, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  labs (title = "Sulfur emissions",
+        subtitle = "Date: Oct 19, 2022",
+        x = "Year",
+        y = "Emissions|Sulfur (Mt BC/yr)",
+        color = "Model")
+```
+#### PM 2.5 
+
+```{r}
+pm_25 <- r2_filt %>% 
+  filter (variable == "Emissions|PM2.5") 
+
+ggplot (data = pm_25, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  labs (title = "PM 2.5 emissions",
+        subtitle = "Date: Oct 19, 2022",
+        x = "Year",
+        y = "Emissions|2.5 (Mt BC/yr)",
+        color = "Model")
+```
+#### PM 10
+
+```{r}
+pm_10 <- r2_filt %>% 
+  filter (variable == "Emissions|PM10") 
+
+ggplot (data = pm_10, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  labs (title = "PM 10 emissions",
+        subtitle = "Date: Oct 19, 2022",
+        x = "Year",
+        y = "Emissions|10 (Mt BC/yr)",
+        color = "Model")
+```
+#### BC 
+
+```{r}
+bc <- r2_filt %>% 
+  filter (variable == "Emissions|BC") 
+
+ggplot (data = pm_10, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  labs (title = "BC emissions",
+        subtitle = "Date: Oct 19, 2022",
+        x = "Year",
+        y = "Emissions|BC (Mt BC/yr)",
+        color = "Model")
+```
+
+#### CO 
+
+```{r}
+co <- r2_filt %>% 
+  filter (variable == "Emissions|CO") 
+
+ggplot (data = pm_10, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  labs (title = "CO emissions",
+        subtitle = "Date: Oct 19, 2022",
+        x = "Year",
+        y = "Emissions|CO (Mt BC/yr)",
+        color = "Model")
+```
+
+#### VOC 
+
+```{r}
+voc <- r2_filt %>% 
+  filter (variable == "Emissions|VOC") 
+
+ggplot (data = voc, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  labs (title = "VOC emissions",
+        subtitle = "Date: Oct 19, 2022",
+        x = "Year",
+        y = "Emissions|VOC (Mt BC/yr)",
+        color = "Model")
+```
+
