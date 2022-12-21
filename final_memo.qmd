@@ -1,0 +1,2695 @@
+---
+title: "Final Memo"
+subtitle: "ENV 400 Special Studies Air Quality Decarbonization"
+author: 
+- name: Abbey O'Meara
+  affiliation: Smith College, 2024
+- name: Charavee Basnet
+  affiliation: Smith College, 2024
+editor: visual
+format: pdf
+output:
+  pdf_document:
+    fig_width: 12
+    fig_height: 8
+mainfont: "Times New Roman"
+monofont: "Times New Roman"
+fontsize: 11pt
+geometry: a5paper, margin=15mm, portrait
+---
+
+The following special study explores the air quality and other co-benefits of decarbonization. This semester, we worked in Alex Barron's climate and energy policy lab collecting relevant literature and visualizing the results through modeling. The lab participated in the Stanford Energy Modeling Forum (EMF) 37 exercise "High Electrification Scenarios for North America". Multiple modeling teams explored the high electrification of the energy systems in North America, with a focus on electrification of transportation, industry, buildings and carbon management. However, these models traditionally only focus on economics and greenhouse gas emissions, with little attention to other "ancillary" but environmentally and socially important impacts on air quality, water use, and waste generation. We used the EMF 37 model output, combined with literature reviews and additional modeling, to understand how electrification of key sectors might shift non-GHG environmental outcomes and where the models are under-equipped to answer these questions.
+
+\-\--
+
+```{r, message = FALSE, echo = FALSE, warning = FALSE}
+library (tidyverse)
+library(dplyr)
+library(ggplot2)
+library(scales)
+library(plotly)
+library(viridis)
+library (writexl)
+library (readxl)
+library(cowplot)
+library(viridis)
+library(ggh4x)
+library(ggthemes)
+library(RColorBrewer)
+library(colorBlindness)
+```
+
+```{r, message = FALSE, echo = FALSE, warning = FALSE}
+subnational_data <- read_csv ("/Users/abigailmorganomeara/Laqb/SpSt-EMF37/emf37_usa_census_regions.csv")
+national_data <- read_csv ("/Users/abigailmorganomeara/Laqb/SpSt-EMF37/emf37_usacanmex.csv")
+
+main_data <- read_csv ("/Users/abigailmorganomeara/Laqb/SpSt-EMF37/emf37_usacanmex.csv")
+
+nat_data <- read_csv ("/Users/abigailmorganomeara/Laqb/SpSt-EMF37/emf37_usacanmex.csv")
+sub_data <- read_csv ("/Users/abigailmorganomeara/Laqb/SpSt-EMF37/emf37_usa_census_regions.csv") 
+
+r2_data <- read_csv ("/Users/abigailmorganomeara/Laqb/SpSt-EMF37/emf37_usacanmex.csv")
+
+variable_subnational <- subnational_data %>% 
+  group_by (variable) %>% 
+  summarize (total = sum (value))
+
+variable_national <- national_data %>% 
+  group_by (variable) %>% 
+  summarize (total = sum (value))
+
+scenario_national <- national_data %>% 
+  group_by (scenario) %>% 
+  summarize (total = sum (value))
+
+my_colors <- RColorBrewer::brewer.pal(4, "Spectral")[2:4]
+#display.brewer.all()
+#display.brewer.all(colorblindFriendly = TRUE)
+
+
+  
+```
+
+Using the EMF37 national database, emissions by scenario was graphed using a comparison between NT.Ref and 0by50.ADV. Different models were displayed between the two scenarios.
+
+```{r, message = FALSE, echo = FALSE}
+r2_filt <-r2_data %>% 
+  filter (scenario == "NT.Ref" |
+          scenario == "0by50.Adv" |
+          scenario == "NT.Ref.R1" |
+          scenario == "NT.Ref.R2") %>% 
+  filter (year <= 2050) %>%
+  #filter (datasrc == "emf37_usacanmex.csv") %>%
+  filter (region == "United States")
+```
+
+The first graph shows NOx by scenario for the two scenarios of 0by50.Adv and NT.Ref. Models were then displayed between the two.
+
+```{r, message = FALSE, echo = FALSE}
+nox <- r2_filt %>% 
+  filter (variable == "Emissions|NOx")
+ggplot (data = nox, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  facet_wrap (~scenario)+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "NOx emissions",
+        x = "Year",
+        y = "Emissions|NOx (Mt NOx/yr)",
+        color = "Model")
+```
+
+The next graph shows Sulfur by scenario for the two scenarios of 0by50.Adv and NT.Ref. Models were then displayed between the two.
+
+```{r, message = FALSE, echo = FALSE}
+sulfur <- r2_filt %>% 
+  filter (variable == "Emissions|Sulfur")
+ggplot (data = sulfur, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Sulfur emissions",
+        x = "Year",
+        y = "Emissions|Sulfur (Mt Sulfur/yr)",
+        color = "Model")
+```
+
+The next graph shows PM 2.5 by scenarios for the two scenarios of 0by50.Adv and NT.Ref. Models were then displayed between the two.
+
+```{r, message = FALSE, echo = FALSE}
+pm_25 <- r2_filt %>% 
+  filter (variable == "Emissions|PM2.5") 
+ggplot (data = pm_25, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "PM 2.5 emissions",
+        x = "Year",
+        y = "Emissions|2.5 (Mt PM2.5/yr)",
+        color = "Model")
+```
+
+The next graph shows PM 10 by scenario for the two scenarios of 0by50.Adv and NT.Ref. Models were then displayed between the two.
+
+```{r, message = FALSE, echo = FALSE}
+pm_10 <- r2_filt %>% 
+  filter (variable == "Emissions|PM10") 
+ggplot (data = pm_10, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "PM 10 emissions",
+        x = "Year",
+        y = "Emissions|10 (Mt PM10/yr)",
+        color = "Model")
+```
+
+The next graph shows BC by scenario for the two scenarios of 0by50.Adv and NT.Ref. Models were then displayed between the two.
+
+```{r, message = FALSE, echo = FALSE}
+bc <- r2_filt %>% 
+  filter (variable == "Emissions|BC") 
+ggplot (data = bc, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "BC emissions",
+        x = "Year",
+        y = "Emissions|BC (Mt BC/yr)",
+        color = "Model")
+```
+
+The next graph shows CO by scenario for the two scenarios of 0by50.Adv and NT.Ref. Models were then displayed between the two.
+
+```{r, message = FALSE, echo = FALSE}
+co <- r2_filt %>% 
+  filter (variable == "Emissions|CO") 
+ggplot (data = co, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "CO emissions",
+        x = "Year",
+        y = "Emissions|CO (Mt CO/yr)",
+        color = "Model")
+```
+
+The next graph shows VOC by scenario for the two scenarios of 0by50.Adv and NT.Ref. Models were then displayed between the two.
+
+```{r, message = FALSE, echo = FALSE}
+voc <- r2_filt %>% 
+  filter (variable == "Emissions|VOC") 
+ggplot (data = voc, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "VOC emissions",
+        x = "Year",
+        y = "Emissions|VOC (Mt VOC/yr)",
+        color = "Model")
+```
+
+The next set of graphs use the EMF37 national database. The graphs were made with emissions by model with by 0by50.Ref and NT.Ref scenarios.
+
+The first graph shows NOx by model for the two 0by50.Ref and NT.Ref scenarios.
+
+```{r, message = FALSE, echo = FALSE}
+ggplot (data = nox, mapping = aes (x = year, y = value, color = scenario))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  facet_wrap (~model)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "NOx emissions",
+        x = "Year",
+        y = "Emissions|NOx (Mt/yr)",
+        color = "Scenario")
+```
+
+The next graph shows Sulfur by model for the two 0by50.Ref and NT.Ref scenarios.
+
+```{r, message = FALSE, echo = FALSE}
+ggplot (data = sulfur, mapping = aes (x = year, y = value, color = scenario))+
+  geom_line()+
+  theme_bw ()+
+  facet_wrap (~model)+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Sulfur emissions",
+        x = "Year",
+        y = "Emissions|Sulfur (Mt/yr)",
+        color = "Scenario")
+```
+
+The next graph shows PM 2.5 by model for the two 0by50.Ref and NT.Ref scenarios.
+
+```{r, message = FALSE, echo = FALSE}
+ggplot (data = pm_25, mapping = aes (x = year, y = value, color = scenario))+
+  geom_line()+
+  theme_bw ()+
+  facet_wrap (~model)+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "PM 2.5 emissions",
+        x = "Year",
+        y = "Emissions|PM 2.5 (Mt/yr)",
+        color = "Scenario")
+```
+
+The next graph shows PM 10 by model for the two 0by50.Ref and NT.Ref scenarios.
+
+```{r, message = FALSE, echo = FALSE}
+ggplot (data = pm_10, mapping = aes (x = year, y = value, color = scenario))+
+  geom_line()+
+  theme_bw ()+
+  facet_wrap (~model)+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+    labs (title = "PM10 emissions",
+        x = "Year",
+        y = "Emissions|PM 10 (Mt/yr)",
+        color = "Scenario")
+```
+
+The next graph shows BC by model for the two 0by50.Ref and NT.Ref scenarios.
+
+```{r, message = FALSE, echo = FALSE}
+ggplot (data = bc, mapping = aes (x = year, y = value, color = scenario))+
+  geom_line()+
+  theme_bw ()+
+  facet_wrap (~model)+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "BC emissions",
+        x = "Year",
+        y = "Emissions|BC (Mt/yr)",
+        color = "Scenario")
+```
+
+The next graph shows CO by model for the two 0by50.Ref and NT.Ref scenarios.
+
+```{r, message = FALSE, echo = FALSE}
+ggplot (data = co, mapping = aes (x = year, y = value, color = scenario))+
+  geom_line()+
+  theme_bw ()+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  scale_color_brewer(palette = "Paired")+
+  facet_wrap (~model)+
+  labs (title = "CO emissions",
+        x = "Year",
+        y = "Emissions|CO (Mt/yr)",
+        color = "Scenario")
+```
+
+The next graph shows VOC by model for the two 0by50.Ref and NT.Ref scenarios.
+
+```{r, message = FALSE, echo = FALSE}
+ggplot (data = voc, mapping = aes (x = year, y = value, color = scenario))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~model)+
+  labs (title = "VOC emissions",
+        x = "Year",
+        y = "Emissions|VOC (Mt/yr)",
+        color = "Scenario")
+```
+
+The next set of graphs use national data from the EMF37 database. Pollutant graphs with CCS were made by model with 0by50.Ref and NT.Ref scenarios.
+
+The first graph shows Coal by model for the two 0by50.Ref and NT.Ref scenarios.
+
+```{r, message = FALSE, echo = FALSE}
+coal <- r2_filt %>% 
+  filter (variable == "Final Energy|Coal") 
+
+ggplot (data = coal, mapping = aes (x = year, y = value, color = scenario))+
+  geom_line()+
+  theme_bw ()+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  scale_color_brewer(palette = "Paired")+
+  facet_wrap (~model)+
+  labs (title = "Final Energy | Coal by Model",
+        x = "Year",
+        y = "Final Energy|Coal (EJ/yr)",
+        color = "Scenario")
+```
+
+The next graph shows Gas by model for the two 0by50.Ref and NT.Ref scenarios.
+
+```{r, message = FALSE, echo = FALSE}
+gas <- r2_filt %>% 
+  filter (variable == "Final Energy|Gas") 
+
+ggplot (data = gas, mapping = aes (x = year, y = value, color = scenario))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~model)+
+  labs (title = "Final Energy|Gas by Model",
+        x = "Year",
+        y = "Final Energy|Gas (EJ/yr)",
+        color = "Scenario")
+```
+
+The next graph shows Oil by model for the two 0by50.Ref and NT.Ref scenarios.
+
+```{r, message = FALSE, echo = FALSE}
+oil <- nat_data %>% 
+  filter(scenario == "NT.Ref.R2" |
+          scenario == "0by50.Ref.R2") %>%
+  filter (variable == "Final Energy|Oil") 
+
+ggplot (data = oil, mapping = aes (x = year, y = value, color = scenario))+
+  geom_line()+
+  theme_bw ()+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  scale_color_brewer(palette = "Paired")+
+  facet_wrap (~model)+
+  labs (title = "Final Energy| Oil by Model",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        color = "Scenario")
+```
+
+Using the EMF37 sub national database, pollutant graphs were created regionally within the US with the MARKAL model. The only model with an output was MARKAL.
+
+The first graph shows NOx by scenario for all regions in the US.
+
+```{r, message = FALSE, echo = FALSE}
+nox <- subnational_data %>% 
+  filter (variable == "Emissions|NOx")%>% 
+  filter (year <= 2050) %>%
+  #filter(datasrc == "emf37_usa_census_regions.csv") %>%
+  filter (scenario == "NT.Ref" |
+            scenario == "0by50.Ref" )
+
+ggplot (data = nox, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "NOx emissions",
+        x = "Year",
+        y = "Emissions|NOx (Mt NOx/yr)",
+        color = "Region")
+```
+
+The next graph shows CO2 by scenario for all regions in the US.
+
+```{r, message = FALSE, echo = FALSE}
+CO2 <- subnational_data %>% 
+  filter (variable == "Emissions|CO2") %>% 
+  filter (scenario == "0by50.Ref" |
+          scenario == "NT.Ref"  ) %>%
+  #filter (datasrc == "emf37_usa_census_regions.csv") %>%
+   filter (year <= 2050)
+
+ggplot (data = CO2, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "CO2 emissions",
+        x = "Year",
+        y = "Emissions|CO2 (Mt CO2/yr)",
+        color = "Model")
+```
+
+The next graph shows Sulfur by scenario for all regions in the US.
+
+```{r, message = FALSE, echo = FALSE}
+sulfur <- subnational_data %>% 
+  filter (variable == "Emissions|Sulfur")%>% 
+  filter (year <= 2050) %>%
+  filter (scenario == "0by50.Ref" |
+          scenario == "NT.Ref"  
+          )
+
+ggplot (data = sulfur, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Sulfur emissions",
+        x = "Year",
+        y = "Emissions|Sulfur (Mt Sulfur/yr)",
+        color = "Model")
+```
+
+The next graph shows PM 2.5 by scenario for all regions in the US.
+
+```{r, message = FALSE, echo = FALSE}
+pm2.5 <- subnational_data %>% 
+  filter (variable == "Emissions|PM2.5")%>% 
+  filter (year <= 2050) %>%
+  filter (scenario == "0by50.Ref" |
+          scenario == "NT.Ref"  
+          #datasrc == "emf37_usa_census_regions"
+          )
+
+ggplot (data = pm2.5, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "PM2.5 emissions",
+        x = "Year",
+        y = "Emissions|PM2.5 (Mt PM2.5/yr)",
+        color = "Model")
+```
+
+The next graph shows PM 10 by scenario for all regions in the US.
+
+```{r, message = FALSE, echo = FALSE}
+pm10 <- subnational_data %>% 
+  filter (variable == "Emissions|PM10")%>% 
+  filter (year <= 2050) %>%
+  filter (scenario == "0by50.Ref" |
+          scenario == "NT.Ref"  
+          #datasrc == "emf37_usa_census_regions"
+          )
+
+ggplot (data = pm10, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "PM10 emissions",
+        x = "Year",
+        y = "Emissions|PM10 (Mt PM10/yr)",
+        color = "Model")
+```
+
+The next graph shows BC by scenario for all regions in the US.
+
+```{r, message = FALSE, echo = FALSE}
+bc <- subnational_data %>% 
+  filter (variable == "Emissions|BC")%>% 
+  filter (year <= 2050) %>%
+  filter (scenario == "0by50.Ref" |
+          scenario == "NT.Ref"  
+          #datasrc == "emf37_usa_census_regions"
+          )
+
+ggplot (data = bc, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "BC emissions",
+        x = "Year",
+        y = "Emissions|BC (Mt BC/yr)",
+        color = "Model")
+```
+
+The next graph shows CO by scenario for all regions in the US.
+
+```{r, message = FALSE, echo = FALSE}
+co<- subnational_data %>% 
+  filter (variable == "Emissions|CO")%>% 
+  filter (year <= 2050) %>%
+  filter (scenario == "0by50.Ref" |
+          scenario == "NT.Ref"  
+          #datasrc == "emf37_usa_census_regions"
+          )
+
+ggplot (data = co, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "CO emissions",
+        x = "Year",
+        y = "Emissions|BC (Mt BC/yr)",
+        color = "Model")
+```
+
+The next graph shows VOC by scenario for all regions in the US.
+
+```{r, message = FALSE, echo = FALSE}
+voc <- subnational_data %>% 
+  filter (variable == "Emissions|VOC")%>% 
+  filter (year <= 2050) %>%
+  filter (scenario == "0by50.Ref" |
+          scenario == "NT.Ref"  
+          #datasrc == "emf37_usa_census_regions"
+          )
+
+ggplot (data = voc, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "VOC emissions",
+        x = "Year",
+        y = "Emissions|VOC (Mt VOC/yr)",
+        color = "Model")
+```
+
+Using the EMF37 sub national data, renewable energy generation graphs were made by region within the US with the MARKAL model.
+
+The first graph shows Non-Biomass Renewable Energy Generation by scenario for all regions within the US.
+
+```{r, message = FALSE, echo = FALSE}
+NBR <- subnational_data %>% 
+  filter (variable == "Primary Energy|Non-Biomass Renewables")%>% 
+  filter (scenario == "0by50.Ref" |
+           scenario == "NT.Ref"  ) %>%
+    filter (year <= 2050)%>%
+  filter (region == "East North Central" |
+            region == "East South Central" |
+            region == "Middle Atlantic" |
+            region == "Mountain" |
+            region == "New England" |
+            region == "Pacific" |
+            region == "South Atlantic" |
+            region == "West North Central" |
+            region == "West South Central")
+
+ggplot (data = NBR, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Non-Biomass Renewable Generation by Region",
+        x = "Year",
+        y = "Primary Energy | Non-Biomass Renewable (EJ/yr)",
+        color = "Model")
+```
+
+The next graph shows Non-Biomass Renewable Secondary Energy Generation by scenario for all regions within the US.
+
+```{r, message = FALSE, echo = FALSE}
+NBR2 <- subnational_data %>% 
+  filter (variable == "Secondary Energy|Electricity|Non-Biomass Renewables")%>% 
+  filter (scenario == "0by50.All.Adv.R2" |
+           scenario == "NT.Ref.R1"  ) %>%
+  filter (year <= 2050) %>%
+  filter (region == "East North Central" |
+            region == "East South Central" |
+            region == "Middle Atlantic" |
+            region == "Mountain" |
+            region == "New England" |
+            region == "Pacific" |
+            region == "South Atlantic" |
+            region == "West North Central" |
+            region == "West South Central")
+
+ggplot (data = NBR2, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  facet_wrap (~scenario)+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Non-Biomass Renewable Secondary Energy, Electricity by Region",
+        x = "Year",
+        y = "Secondary Energy | Non-Biomass Renewable (EJ/yr)",
+        color = "Model")
+```
+
+The next graph shows Wind Energy Generation by scenario for all regions within the US.
+
+```{r, message = FALSE, echo = FALSE}
+primarywind <- subnational_data %>% 
+  filter (variable == "Primary Energy|Wind")%>% 
+  filter (scenario == "0by50.Ref" |
+           scenario == "NT.Ref"  ) %>%
+    filter (year <= 2050)%>%
+  filter (region == "East North Central" |
+            region == "East South Central" |
+            region == "Middle Atlantic" |
+            region == "Mountain" |
+            region == "New England" |
+            region == "Pacific" |
+            region == "South Atlantic" |
+            region == "West North Central" |
+            region == "West South Central")
+
+ggplot (data = primarywind, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Primary Energy Wind Generation by Region",
+        x = "Year",
+        y = "Primary Wind Energy (GW)",
+        color = "Model")
+```
+
+The next graph shows Offshore Wind Secondary Energy Generation by scenario for all regions within the US.
+
+```{r, message = FALSE, echo = FALSE}
+wind <- subnational_data %>% 
+  filter (variable == "Secondary Energy|Electricity|Wind|Onshore")%>% 
+  filter (scenario == "0by50.Ref" |
+           scenario == "NT.Ref"  ) %>%
+    filter (year <= 2050)%>%
+  filter (region == "East North Central" |
+            region == "East South Central" |
+            region == "Middle Atlantic" |
+            region == "Mountain" |
+            region == "New England" |
+            region == "Pacific" |
+            region == "South Atlantic" |
+            region == "West North Central" |
+            region == "West South Central")
+
+ggplot (data = wind, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Secondary Energy, Offshore Wind Electricity Generation by Region",
+        x = "Year",
+        y = "Secondary Energy | Offshore Wind (GW)",
+        color = "Model")
+```
+
+The next graph shows Wind Energy Generation Capacity by scenario for all regions within the US.
+
+```{r, message = FALSE, echo = FALSE}
+wind2 <- subnational_data %>% 
+  filter (variable == "Capacity|Electricity|Wind")%>% 
+  filter (scenario == "0by50.Ref" |
+           scenario == "NT.Ref"  ) %>%
+    filter (year <= 2050)%>%
+  filter (region == "East North Central" |
+            region == "East South Central" |
+            region == "Middle Atlantic" |
+            region == "Mountain" |
+            region == "New England" |
+            region == "Pacific" |
+            region == "South Atlantic" |
+            region == "West North Central" |
+            region == "West South Central")
+
+ggplot (data = wind2, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Capacity of Wind Electricity Generation  by Region",
+        x = "Year",
+        y = "Capacity Wind Energy (GW)",
+        color = "Model")
+```
+
+The next graph showsHydroy Energy Generation Capacity by scenario for all regions within the US.
+
+```{r, message = FALSE, echo = FALSE}
+hydro <- subnational_data %>% 
+  filter (variable == "Capacity|Electricity|Hydro")%>% 
+  filter (scenario == "0by50.Ref" |
+           scenario == "NT.Ref"  ) %>%
+    filter (year <= 2050)%>%
+  filter (region == "East North Central" |
+            region == "East South Central" |
+            region == "Middle Atlantic" |
+            region == "Mountain" |
+            region == "New England" |
+            region == "Pacific" |
+            region == "South Atlantic" |
+            region == "West North Central" |
+            region == "West South Central")
+
+ggplot (data = hydro, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Capacity of Hydro Electricity Generation  by Region",
+        x = "Year",
+        y = "Capacity Hydro Energy (EJ/yr)",
+        color = "Model")
+```
+
+The next graph shows Solar Energy Generation Cacpacity by scenario for all regions within the US.
+
+```{r, message = FALSE, echo = FALSE}
+solarCSP <- subnational_data %>% 
+  filter (variable == "Capacity|Electricity|Solar|CSP")%>% 
+  filter (scenario == "0by50.Ref" |
+           scenario == "NT.Ref"  ) %>%
+    filter (year <= 2050)%>%
+  filter (region == "East North Central" |
+            region == "East South Central" |
+            region == "Middle Atlantic" |
+            region == "Mountain" |
+            region == "New England" |
+            region == "Pacific" |
+            region == "South Atlantic" |
+            region == "West North Central" |
+            region == "West South Central")
+
+ggplot (data = solarCSP, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Capacity of Solar CSP Electricity Generation by Region",
+        x = "Year",
+        y = "Capacity Solar CSP Energy (GW)",
+        color = "Model")
+```
+
+The next graph shows Solar PV Energy Generation Capacity by scenario for all regions within the US.
+
+```{r, message = FALSE, echo = FALSE}
+solarPV <- subnational_data %>% 
+  filter (variable == "Capacity|Electricity|Solar|PV")%>% 
+  filter (scenario == "0by50.Ref" |
+           scenario == "NT.Ref"  ) %>%
+    filter (year <= 2050)%>%
+  filter (region == "East North Central" |
+            region == "East South Central" |
+            region == "Middle Atlantic" |
+            region == "Mountain" |
+            region == "New England" |
+            region == "Pacific" |
+            region == "South Atlantic" |
+            region == "West North Central" |
+            region == "West South Central")
+
+ggplot (data = solarPV, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Capacity of Solar PV Electricity Generation by Region",
+        x = "Year",
+        y = "Capacity Solar PV Energy (GW)",
+        color = "Model")
+```
+
+The next graph shows Solar Energy Generation by scenario for all regions within the US.
+
+```{r, message = FALSE, echo = FALSE}
+primarysolar <- subnational_data %>% 
+  filter (variable == "Primary Energy|Solar")%>% 
+  filter (scenario == "0by50.Ref" |
+           scenario == "NT.Ref"  ) %>%
+    filter (year <= 2050)%>%
+  filter (region == "East North Central" |
+            region == "East South Central" |
+            region == "Middle Atlantic" |
+            region == "Mountain" |
+            region == "New England" |
+            region == "Pacific" |
+            region == "South Atlantic" |
+            region == "West North Central" |
+            region == "West South Central")
+
+ggplot (data = primarysolar, mapping = aes (x = year, y = value, color = region))+
+  geom_line()+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Primary Energy Solar Generation by Region",
+        x = "Year",
+        y = "Primary Solar Energy (GW)",
+        color = "Model")
+```
+
+Using the EMF37 national database, sector changes in fuel were made with the MARKAL model.
+
+```{r, message = FALSE, echo = FALSE}
+r3 <- main_data %>% 
+  filter (region == "United States")%>% 
+  filter (variable == "Emissions|BC" |
+          variable == "Emissions|CO" |
+          variable == "Emissions|NOx" |
+          variable == "Emissions|PM10" |
+          variable == "Emissions|PM2.5" |
+          variable == "Emissions|Sulfur" |
+          variable == "Emissions|VOC"|
+            
+          variable == "Final Energy|Coal"|
+          variable == "Final Energy|Gas" |
+          variable == "Final Energy|Oil"|
+            
+          variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal"|
+            
+          variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil"|
+          
+          variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas"
+          
+          ) %>%
+  filter (year <= 2050)%>%
+  filter (scenario == "NT.Ref.R2" |
+          scenario == "NT.Ref" |
+          scenario == "0by50.Ref" |
+          scenario == "0by50.Ref.R2")
+```
+
+Using the EMF37 national data, oil sectors of final energy for buildings, transportation and industry were filtered by model and then created below.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector <- r3 %>%
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+
+oil_sector_models <- oil_sector %>% 
+  group_by(model) %>% 
+  summarize (total = sum (value))
+```
+
+The first graph displays the ADAGE v1.0 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m1 <- r3 %>%
+  filter (model == "ADAGE v1.0") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m1, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - ADAGE v1.0",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the AnyMOD v0.1.6 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m2 <- r3 %>%
+  filter (model == "AnyMOD v0.1.6") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m2, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - AnyMOD v0.1.6",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the EC-MSMR v20220805 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m3 <- r3 %>%
+  filter (model == "EC-MSMR v20220805") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m3, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - EC-MSMR v20220805",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the EPAUS9r-TIMES v20.5.1emf model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m4 <- r3 %>%
+  filter (model == "EPAUS9r-TIMES v20.5.1emf") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m4, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - EPAUS9r-TIMES v20.5.1emf",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the EPS v3.2.1 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m5 <- r3 %>%
+  filter (model == "EPS v3.2.1") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+
+ggplot (data = oil_sector_m5, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - EPS v3.2.1",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the GCAM-USA 5.3 EMF3 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m6 <- r3 %>%
+  filter (model == "GCAM-USA 5.3 EMF37") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m6, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - GCAM-USA 5.3 EMF37",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the GCAM5.2-EMF37 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m7 <- r3 %>%
+  filter (model == "GCAM5.2-EMF37") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m7, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - GCAM5.2-EMF37",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the GCAM5.3-EMF37 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m8 <- r3 %>%
+  filter (model == "GCAM5.3-EMF37") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m8, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - GCAM5.3-EMF37",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the gTech.8877 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m9 <- r3 %>%
+  filter (model == "gTech.8877") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m9, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - gTech.8877",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the MARKAL.NETL.2020 v1.0 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m10 <- r3 %>%
+  filter (model == "MARKAL.NETL.2020 v1.0") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m10, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - MARKAL.NETL.2020 v1.0",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the MARKAL.NETL.2021 v1.0 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m11 <- r3 %>%
+  filter (model == "MARKAL.NETL.2021 v1.0") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m11, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - MARKAL.NETL.2021 v1.0",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the NATEM v1.0 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m12 <- r3 %>%
+  filter (model == "NATEM v1.0") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m12, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - NATEM v1.0",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the Scout v0.8 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m13 <- r3 %>%
+  filter (model == "Scout v0.8") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m13, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - Scout v0.8",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the TEMOA v1.0 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m14 <- r3 %>%
+  filter (model == "TEMOA v1.0") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m14, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - TEMOA v1.0",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the TEMPO v1.0 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m15 <- r3 %>%
+  filter (model == "TEMPO v1.0") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m15, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - TEMPO v1.0",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the US-REGEN v5.0 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m16 <- r3 %>%
+  filter (model == "US-REGEN v5.0") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m16, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - US-REGEN v5.0",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the USREP-ReEDS v4-22.1.0 model by scenario for all final energy oil sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+oil_sector_m17 <- r3 %>%
+  filter (model == "USREP-ReEDS v4-22.1.0") %>% 
+  filter (variable == "Final Energy|Buildings|Oil"|
+          variable == "Final Energy|Industry|Oil"|
+          variable == "Final Energy|Transportation|Oil") 
+  
+ggplot (data = oil_sector_m17, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Oil - USREP-ReEDS v4-22.1.0",
+        x = "Year",
+        y = "Final Energy|Oil (EJ/yr)",
+        fill = "Variable")
+```
+
+Using the EMF37 national data, gas sectors of final energy for buildings, transportation and industry were filtered by model and then created below.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector <- r3 %>%
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+
+gas_sector_models <- gas_sector %>% 
+  group_by(model) %>% 
+  summarize (total = sum (value))
+```
+
+The first graph displays the ADAGE v1.0 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m1 <- r3 %>%
+  filter (model == "ADAGE v1.0") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m1, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|Gas - ADAGE v1.0",
+        x = "Year",
+        y = "Final Energy|Gas (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the AnyMOD v0.1.6 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m2 <- r3 %>%
+  filter (model == "AnyMOD v0.1.6") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m2, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - AnyMOD v0.1.6",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+
+```
+
+The next graph displays the EC-MSMR v20220805 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m3 <- r3 %>%
+  filter (model == "EC-MSMR v20220805") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m3, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - EC-MSMR v20220805",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+
+```
+
+The next graph displays the EPAUS9r-TIMES v20.5.1emf model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m4 <- r3 %>%
+  filter (model == "EPAUS9r-TIMES v20.5.1emf") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m4, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - EPAUS9r-TIMES v20.5.1emf",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the EPS v3.2.1 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m5 <- r3 %>%
+  filter (model == "EPS v3.2.1") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m5, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - EPS v3.2.1",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the GCAM-USA 5.3 EMF37 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m6 <- r3 %>%
+  filter (model == "GCAM-USA 5.3 EMF37") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m6, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - GCAM-USA 5.3 EMF37",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the GCAM5.2-EMF37 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m7 <- r3 %>%
+  filter (model == "GCAM5.2-EMF37") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m7, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - GCAM5.2-EMF37",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the GCAM5.3-EMF37 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m8 <- r3 %>%
+  filter (model == "GCAM5.3-EMF37") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m8, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - GCAM5.3-EMF37",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the gTech.8877 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m9 <- r3 %>%
+  filter (model == "gTech.8877") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m9, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - gTech.8877",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the MARKAL.NETL.2020 v1.0 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m10 <- r3 %>%
+  filter (model == "MARKAL.NETL.2020 v1.0") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m10, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - MARKAL.NETL.2020 v1.0L",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the MARKAL.NETL.2021 v1.0 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m11 <- r3 %>%
+  filter (model == "MARKAL.NETL.2021 v1.0") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m11, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - MARKAL.NETL.2021 v1.0",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the NATEM v1.0 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m12 <- r3 %>%
+  filter (model == "NATEM v1.0") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m12, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - NATEM v1.0",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the Scout v0.8 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m13 <- r3 %>%
+  filter (model == "Scout v0.8") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m13, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - Scout v0.8",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the TEMOA v1.0 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m14 <- r3 %>%
+  filter (model == "TEMOA v1.0") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m14, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - TEMOA v1.0",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the TEMPO v1.0 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m15 <- r3 %>%
+  filter (model == "TEMPO v1.0") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m15, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - TEMPO v1.0",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the US-REGEN v5.0 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m16 <- r3 %>%
+  filter (model == "US-REGEN v5.0") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m16, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - US-REGEN v5.0",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the USREP-ReEDS v4-22.1.0 model by scenario for all final energy gas sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+gas_sector_m17 <- r3 %>%
+  filter (model == "USREP-ReEDS v4-22.1.0") %>% 
+  filter (variable == "Final Energy|Buildings|Gas"|
+          variable == "Final Energy|Industry|Gas"|
+          variable == "Final Energy|Transportation|Gas") 
+  
+ggplot (data = gas_sector_m17, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|gas - USREP-ReEDS v4-22.1.0",
+        x = "Year",
+        y = "Final Energy|gas (EJ/yr)",
+        fill = "Variable")
+```
+
+Using the EMF37 national data, coal sectors of final energy for buildings, transportation and industry were filtered by model and then created below.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector <- r3 %>%
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+
+coal_sector_models <- coal_sector %>% 
+  group_by(model) %>% 
+  summarize (total = sum (value))
+```
+
+The first graph displays the ADAGE v1.0 model by scenario for all final energy coal sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector_m1 <- r3 %>%
+  filter (model == "ADAGE v1.0") %>% 
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+  
+ggplot (data = coal_sector_m1, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|coal - ADAGE v1.0",
+        x = "Year",
+        y = "Final Energy|coal (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the AnyMOD v0.1.6 model by scenario for all final energy coal sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector_m2 <- r3 %>%
+  filter (model == "AnyMOD v0.1.6") %>% 
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+  
+ggplot (data = coal_sector_m2, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|coal - AnyMOD v0.1.6",
+        x = "Year",
+        y = "Final Energy|coal (EJ/yr)",
+        fill = "Variable")
+
+```
+
+The next graph displays the EPAUS9r-TIMES v20.5.1emf model by scenario for all final energy coal sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector_m3 <- r3 %>%
+  filter (model == "EPAUS9r-TIMES v20.5.1emf") %>% 
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+  
+ggplot (data = coal_sector_m3, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|coal - EPAUS9r-TIMES v20.5.1emf",
+        x = "Year",
+        y = "Final Energy|coal (EJ/yr)",
+        fill = "Variable")
+
+```
+
+The next graph displays the EPS v3.2.1 model by scenario for all final energy coal sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector_m4 <- r3 %>%
+  filter (model == "EPS v3.2.1") %>% 
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+  
+ggplot (data = coal_sector_m4, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|coal - EPS v3.2.1",
+        x = "Year",
+        y = "Final Energy|coal (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the GCAM-USA 5.3 EMF37 model by scenario for all final energy coal sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector_m5 <- r3 %>%
+  filter (model == "GCAM-USA 5.3 EMF37") %>% 
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+  
+ggplot (data = coal_sector_m5, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|coal - GCAM-USA 5.3 EMF37",
+        x = "Year",
+        y = "Final Energy|coal (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the GCAM5.2-EMF37 model by scenario for all final energy coal sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector_m6 <- r3 %>%
+  filter (model == "GCAM5.2-EMF37") %>% 
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+  
+ggplot (data = coal_sector_m6, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|coal - GCAM5.2-EMF37",
+        x = "Year",
+        y = "Final Energy|coal (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the GCAM5.3-EMF37 model by scenario for all final energy coal sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector_m7 <- r3 %>%
+  filter (model == "GCAM5.3-EMF37") %>% 
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+  
+ggplot (data = coal_sector_m7, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|coal - GCAM5.3-EMF37",
+        x = "Year",
+        y = "Final Energy|coal (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the gTech.8877 model by scenario for all final energy coal sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector_m8 <- r3 %>%
+  filter (model == "gTech.8877") %>% 
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+  
+ggplot (data = coal_sector_m8, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|coal - gTech.8877",
+        x = "Year",
+        y = "Final Energy|coal (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the MARKAL.NETL.2020 v1.0 model by scenario for all final energy coal sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector_m9 <- r3 %>%
+  filter (model == "MARKAL.NETL.2020 v1.0") %>% 
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+  
+ggplot (data = coal_sector_m9, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|coal - MARKAL.NETL.2020 v1.0",
+        x = "Year",
+        y = "Final Energy|coal (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the MARKAL.NETL.2021 v1.0 model by scenario for all final energy coal sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector_m10 <- r3 %>%
+  filter (model == "MARKAL.NETL.2021 v1.0") %>% 
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+  
+ggplot (data = coal_sector_m10, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|coal - MARKAL.NETL.2021 v1.0",
+        x = "Year",
+        y = "Final Energy|coal (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the NATEM v1.0 model by scenario for all final energy coal sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector_m11 <- r3 %>%
+  filter (model == "NATEM v1.0") %>% 
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+  
+ggplot (data = coal_sector_m11, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|coal - NATEM v1.0",
+        x = "Year",
+        y = "Final Energy|coal (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the TEMOA v1.0 model by scenario for all final energy coal sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector_m12 <- r3 %>%
+  filter (model == "TEMOA v1.0") %>% 
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+  
+ggplot (data = coal_sector_m12, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|coal - TEMOA v1.0",
+        x = "Year",
+        y = "Final Energy|coal (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the US-REGEN v5.0 model by scenario for all final energy coal sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector_m13 <- r3 %>%
+  filter (model == "US-REGEN v5.0") %>% 
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+  
+ggplot (data = coal_sector_m13, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|coal - US-REGEN v5.0",
+        x = "Year",
+        y = "Final Energy|coal (EJ/yr)",
+        fill = "Variable")
+```
+
+The next graph displays the USREP-ReEDS v4-22.1.0 model by scenario for all final energy coal sectors within the US.
+
+```{r, message = FALSE, echo = FALSE}
+coal_sector_m12 <- r3 %>%
+  filter (model == "USREP-ReEDS v4-22.1.0") %>% 
+  filter (variable == "Final Energy|Industry|Coal"|
+          variable == "Final Energy|Buildings|Coal") 
+  
+ggplot (data = coal_sector_m12, mapping = aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  labs (title = "Final Energy|coal - USREP-ReEDS v4-22.1.0",
+        x = "Year",
+        y = "Final Energy|coal (EJ/yr)",
+        fill = "Variable")
+```
+
+Electricity capacity of renewable energy in MARKAL.NETL.2020 v1.0 for all regions using both NT.Ref and 0by50.Ref scenarios with the EMF37 sub national level data.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re_all <- sub_data %>% 
+  filter (year <= 2050) %>% 
+  filter (region == "East North Central"|
+          region == "East South Central" |
+          region == "Middle Atlantic" |
+          region == "Mountain"|
+          region == "New England"|
+          region == "Pacific"|
+          region == "South Atlantic"|
+          region == "West North Central"|
+          region == "West South Central") %>% 
+  filter ( variable == "Capacity|Electricity|Biomass|w/o CCS"|
+          variable == "Capacity|Electricity|Wind"|
+          variable == "Capacity|Electricity|Wind|Offshore"|
+          variable == "Capacity|Electricity|Wind|Onshore"|
+          variable == "Capacity|Electricity|Solar|CSP"|
+          variable == "Capacity|Electricity|Solar|PV") %>% 
+  filter (scenario == "NT.Ref"|
+          scenario == "0by50.Ref")
+  
+ggplot (data = ccs_re_all, mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~region)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation of renewable energy in MARKAL.NETL.2020 v1.0 for All Regions",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+
+```
+
+Using the EMF37 sub national data, CCS with reporting renewable energy capacity stacked graphs were created using MARKAL-NETL model.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re <- sub_data %>% 
+  filter (year <= 2050) %>% 
+  filter (region == "East North Central"|
+          region == "East South Central" |
+          region == "Middle Atlantic" |
+          region == "Mountain"|
+          region == "New England"|
+          region == "Pacific"|
+          region == "South Atlantic"|
+          region == "West North Central"|
+          region == "West South Central") %>% 
+  filter ( variable == "Capacity|Electricity|Biomass|w/o CCS"|
+          variable == "Capacity|Electricity|Wind"|
+          variable == "Capacity|Electricity|Wind|Offshore"|
+          variable == "Capacity|Electricity|Wind|Onshore"|
+          variable == "Capacity|Electricity|Solar|CSP"|
+          variable == "Capacity|Electricity|Solar|PV") %>% 
+  filter (scenario == "NT.Ref"|
+          scenario == "0by50.Ref")
+  
+count_model1 <- ccs_re %>% 
+  group_by (model) %>% 
+  summarize (total = sum (value))
+```
+
+The first graph displays stacked renewable energy electricity capacities for the East North Central region.
+
+```{r, message = FALSE, echo = FALSE}
+ggplot (data = ccs_re, mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation of renewable energy in MARKAL.NETL.2020 v1.0 for All Regions",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked renewable energy electricity capacities for the East North Central region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re %>% 
+  filter (region == "East North Central") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in East North Central",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked renewable energy electricity capacities for the East South Central region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re %>% 
+  filter (region == "East South Central") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in East South Central",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked renewable energy electricity capacities for the Middle Atlantic region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re %>% 
+  filter (region == "Middle Atlantic") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in Middle Atlantic",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked renewable energy electricity capacities for the Mountain region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re %>% 
+  filter (region == "Mountain") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in Mountain",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked renewable energy electricity capacities for the New England region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re %>% 
+  filter (region == "New England") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in New England",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked renewable energy electricity capacities for the Pacific region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re %>% 
+  filter (region == "Pacific") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in Pacific",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked renewable energy electricity capacities for the South Atlantic region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re %>% 
+  filter (region == "South Atlantic") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in South Atlantic",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked renewable energy electricity capacities for the West North Central region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re %>% 
+  filter (region == "West North Central") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in West North Central",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked renewable energy electricity capacities for the West South Central region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re %>% 
+  filter (region == "West South Central") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in West South Central",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+Electricity capacity of CCS in MARKAL.NETL.2020 v1.0 for all regions using both NT.Ref and 0by50.Ref scenarios with the EMF37 sub national level data.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re_50all <- sub_data %>% 
+  filter (year <= 2050) %>% 
+  filter (region == "East North Central"|
+          region == "East South Central" |
+          region == "Middle Atlantic" |
+          region == "Mountain"|
+          region == "New England"|
+          region == "Pacific"|
+          region == "South Atlantic"|
+          region == "West North Central"|
+          region == "West South Central") %>% 
+  filter (variable == "Capacity|Electricity|Biomass|w/ CCS"|
+          variable == "Capacity|Electricity|Coal|w/ CCS"|
+          variable == "Capacity|Electricity|Coal|w/o CCS"|
+          variable == "Capacity|Electricity|Gas|w/ CCS"|
+          variable == "Capacity|Electricity|Gas|w/o CCS" |
+          variable == "Capacity|Electricity|Oil" |
+          variable == "Capacity|Electricity|Oil|w/o CCS"|
+          variable == "Capacity|Electricity|Oil|w/ CCS") %>% 
+  filter (scenario == "NT.Ref"|
+          scenario == "0by50.Ref")
+  
+ggplot (data = ccs_re_50all, mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~region)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation of renewable energy in MARKAL.NETL.2020 v1.0 for All Regions",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+Using the EMF37 sub national data, CCS stacked graphs using the MARKAL.NETL.2020 v1.0 model were made per region in the US. All graphs included capacity of electricity for biomass, coal, gas and oil. These were all used with and without CCS.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re_50 <- sub_data %>% 
+  filter (year <= 2050) %>% 
+  filter (region == "East North Central"|
+          region == "East South Central" |
+          region == "Middle Atlantic" |
+          region == "Mountain"|
+          region == "New England"|
+          region == "Pacific"|
+          region == "South Atlantic"|
+          region == "West North Central"|
+          region == "West South Central") %>% 
+  filter (variable == "Capacity|Electricity|Biomass|w/ CCS"|
+          #variable == "Capacity|Electricity|Biomass|w/o CCS"|
+          variable == "Capacity|Electricity|Coal|w/ CCS"|
+          variable == "Capacity|Electricity|Coal|w/o CCS"|
+          variable == "Capacity|Electricity|Gas|w/ CCS"|
+          variable == "Capacity|Electricity|Gas|w/o CCS" |
+          variable == "Capacity|Electricity|Oil" |
+          variable == "Capacity|Electricity|Oil|w/o CCS"|
+          variable == "Capacity|Electricity|Oil|w/ CCS") %>% 
+  filter (scenario == "NT.Ref"|
+          scenario == "0by50.Ref")
+  
+count_model <- ccs_re_50 %>% 
+  group_by (model) %>% 
+  summarize (total = sum (value))
+```
+
+The first graph displays stacked biomass, coal, gas and oil electricity capacities with both CCS and without CCS for all regions reporting.
+
+```{r, message = FALSE, echo = FALSE}
+ggplot (data = ccs_re_50, mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 for All Regions",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked biomass, coal, gas and oil electricity capacities with both CCS and without CCS for the East North Central region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re_50 %>% 
+  filter (region == "East North Central") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in East North Central",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked biomass, coal, gas and oil electricity capacities with both CCS and without CCS for the East South Central region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re_50 %>% 
+  filter (region == "East South Central") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in East South Central",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked biomass, coal, gas and oil electricity capacities with both CCS and without CCS for the Middle Atlantic region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re_50 %>% 
+  filter (region == "Middle Atlantic") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in Middle Atlantic",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked biomass, coal, gas and oil electricity capacities with both CCS and without CCS for the Mountain region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re_50 %>% 
+  filter (region == "Mountain") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in Mountain",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked biomass, coal, gas and oil electricity capacities with both CCS and without CCS for the New England region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re_50 %>% 
+  filter (region == "New England") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in New England",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked biomass, coal, gas and oil electricity capacities with both CCS and without CCS for the Pacific region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re_50 %>% 
+  filter (region == "Pacific") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in Pacific",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked biomass, coal, gas and oil electricity capacities with both CCS and without CCS for the South Atlantic region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re_50 %>% 
+  filter (region == "South Atlantic") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in South Atlantic",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked biomass, coal, gas and oil electricity capacities with both CCS and without CCS for the West North Central region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re_50 %>% 
+  filter (region == "West North Central") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in West North Central",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+The next graph displays stacked biomass, coal, gas and oil electricity capacities with both CCS and without CCS for the West South Central region.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re_50 %>% 
+  filter (region == "West South Central") %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  facet_wrap (~scenario)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation with and without CCS in MARKAL.NETL.2020 v1.0 in West South Central",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+Electricity capacity of CCS and RE in MARKAL.NETL.2020 v1.0 for all regions using both NT.Ref and 0by50.Ref scenarios with the EMF37 sub national level data.
+
+```{r, message = FALSE, echo = FALSE}
+ccs_re_together <- sub_data %>% 
+  filter (year <= 2050) %>% 
+  filter (region == "East North Central"|
+          region == "East South Central" |
+          region == "Middle Atlantic" |
+          region == "Mountain"|
+          region == "New England"|
+          region == "Pacific"|
+          region == "South Atlantic"|
+          region == "West North Central"|
+          region == "West South Central") %>% 
+  filter (variable == "Capacity|Electricity|Biomass|w/ CCS"|
+          variable == "Capacity|Electricity|Coal|w/ CCS"|
+          variable == "Capacity|Electricity|Coal|w/o CCS"|
+          variable == "Capacity|Electricity|Gas|w/ CCS"|
+          variable == "Capacity|Electricity|Gas|w/o CCS" |
+          #variable == "Capacity|Electricity|Oil" |
+          variable == "Capacity|Electricity|Oil|w/o CCS"|
+          variable == "Capacity|Electricity|Oil|w/ CCS"|
+          variable == "Capacity|Electricity|Biomass|w/o CCS"|
+          #variable == "Capacity|Electricity|Wind"|
+          variable == "Capacity|Electricity|Wind|Offshore"|
+          variable == "Capacity|Electricity|Wind|Onshore"|
+          variable == "Capacity|Electricity|Solar|CSP"|
+          variable == "Capacity|Electricity|Solar|PV") %>% 
+  filter (scenario == "NT.Ref"|
+          scenario == "0by50.Ref")
+  
+ggplot (data = ccs_re_together, mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  theme_bw ()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~region)+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricity Generation of renewable energy in MARKAL.NETL.2020 v1.0 for All Regions",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+Using the EMF37 sub national data, electricity capacity was graphed by region. The only model reporting was MARKAL.NETL.2021 v1.0.
+
+```{r, message = FALSE, echo = FALSE}
+
+r2_filt <-r2_data %>% 
+  filter (scenario == "NT.Ref" |
+          scenario == "NT.Ref.R1" |
+          scenario == "0by50.All.Adv.R2") %>% 
+  filter (year <= 2050) %>%
+  filter (region == "United States")
+```
+
+```{r, message = FALSE, echo = FALSE}
+markal <- sub_data %>% 
+  filter (scenario == "NT.Ref.R1") %>%
+  #filter (model == "MARKAL.NETL.2020 v1.0") %>%
+  filter(variable == "Capacity|Electricity")
+
+markal %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = variable))+
+  geom_col()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~region)+
+  theme_bw ()+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricty Capacity",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+**Using the EMF37 national data, electricity capacity was graphed for the US. Four models reported for the NT.Ref scenario.**
+
+```{r, message = FALSE, echo = FALSE}
+
+filtered <- national_data %>% 
+  filter (scenario == "NT.Ref" ) %>% 
+  filter (year <= 2050) %>%
+  filter (region == "United States") %>%
+  filter(variable == "Capacity|Electricity" ) 
+
+filtered %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = scenario))+
+  geom_col()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~model)+
+  theme_bw ()+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricty Capacity, NT.ref Scenario",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+**Using the EMF37 national data, electricity capacity was graphed for the US. Only one model, AnyMOD v0.1.6, reported for the 0by50.Adv.R2 scenario.**
+
+```{r, message = FALSE, echo = FALSE}
+
+filtered2 <- national_data %>% 
+  filter (scenario == "0by50.Adv.R2") %>% 
+  filter (year <= 2050) %>%
+  filter (region == "United States") %>%
+  filter(variable == "Capacity|Electricity" ) 
+
+filtered2 %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = scenario))+
+  geom_col()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~model)+
+  theme_bw ()+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricty Capacity, 0by50.Adv Scenario",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+**Using the EMF37 national data, electricity capacity was graphed for the US. Only one model, AnyMOD v0.1.6, reported for the 0by50.Adv.R1 scenario.**
+
+```{r, message = FALSE, echo = FALSE}
+
+filtered3 <- national_data %>% 
+  filter (scenario == "0by50.Adv.R1") %>% 
+  filter (year <= 2050) %>%
+  filter (region == "United States") %>%
+  filter(variable == "Capacity|Electricity" ) 
+
+filtered3 %>% 
+  ggplot ( mapping= aes (x = year, y = value, fill = scenario))+
+  geom_col()+
+  scale_fill_brewer(palette = "Paired")+
+  facet_wrap (~model)+
+  theme_bw ()+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Electricty Capacity, 0by50.Adv.R1 Scenario",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+**Using EMF37 national data, percent change in emissions was calculated for all CCS emissions. CCS emissions included BC, CO, NOx, PM10, PM2.5, Sulfur, VOC, Coal, Gas and Oil.**
+
+```{r, message = FALSE, echo = FALSE, warning = FALSE}
+filt_data <- national_data %>% 
+  filter (region == "United States")%>% 
+  filter (variable == "Emissions|BC" |
+          variable == "Emissions|CO" |
+          variable == "Emissions|NOx" |
+          variable == "Emissions|PM10" |
+          variable == "Emissions|PM2.5" |
+          variable == "Emissions|Sulfur" |
+          variable == "Emissions|VOC"|
+          variable == "Final Energy|Coal"|
+          variable == "Final Energy|Gas" |
+          variable == "Final Energy|Oil"
+          ) %>%
+  filter (year <= 2050)%>%
+  filter (scenario == "NT.Ref.R2"|
+          scenario == "0by50.Ref.R2") 
+
+delta_1 <- filt_data %>% 
+  group_by (variable) %>% 
+  pivot_wider (names_from = scenario, 
+               values_from = value) 
+
+delta_1 <- filt_data %>% 
+  #select(-`...1`) %>% 
+  pivot_wider (names_from = scenario, 
+               values_from = value) %>% 
+  mutate (delta = (`0by50.Ref.R2` - NT.Ref.R2 )/(NT.Ref.R2)) %>% 
+  mutate (delta = delta * 100)
+
+delta_1 %>% 
+  filter(variable != "Final Energy|Coal") %>% 
+  ggplot(mapping = aes (x = year, y = delta, color = model)) +
+  geom_line () +
+  scale_color_viridis(discrete = TRUE) +
+  facet_wrap (~variable) +
+  theme_bw ()+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Percent Change in Emissions",
+        x= "Year",
+        y = "(GW)",
+        fill = "Variable")
+```
+
+**Using EMF37 national data, CCS vs RE was graphed for all models reporting in both 2030 and 2050. CCS variables included biomass, coal and gas with CCS. Renewable energy variables included biomass without CCS, wind, wind offshore, wind onshore, solar CSP and solar PV.**
+
+```{r, message = FALSE, echo = FALSE, warning = FALSE}
+ccs_re_nat <- national_data %>% 
+  filter (year == 2050|
+            year == 2030) %>% 
+  filter (region == "United States") %>% 
+  filter (variable == "Capacity|Electricity|Biomass|w/ CCS"|
+          variable == "Capacity|Electricity|Coal|w/ CCS"|
+          variable == "Capacity|Electricity|Gas|w/ CCS"|
+          variable == "Capacity|Electricity|Biomass|w/o CCS"|
+          variable == "Capacity|Electricity|Wind"|
+          variable == "Capacity|Electricity|Wind|Offshore"|
+          variable == "Capacity|Electricity|Wind|Onshore"|
+          variable == "Capacity|Electricity|Solar|CSP"|
+          variable == "Capacity|Electricity|Solar|PV") %>% 
+  filter (scenario == "NT.Ref.R2"|
+          scenario == "0by50.Ref.R2") %>%
+  mutate(type = recode(variable,
+                    `Capacity|Electricity|Biomass|w/ CCS` = "CCS",
+                    `Capacity|Electricity|Coal|w/ CCS` ="CCS",
+                    `Capacity|Electricity|Gas|w/ CCS` ="CCS",
+                    `Capacity|Electricity|Biomass|w/o CCS` ="Renewable Energy",
+                    `Capacity|Electricity|Wind` = "Renewable Energy",
+                    `Capacity|Electricity|Wind|Offshore` = "Renewable Energy",
+                    `Capacity|Electricity|Wind|Onshore` = "Renewable Energy",
+                    `Capacity|Electricity|Solar|CSP` = "Renewable Energy",
+                    `Capacity|Electricity|Solar|PV` = "Renewable Energy"
+                  )) %>% 
+  group_by (model, scenario, year, type) %>% 
+  summarize (total = sum (value))
+
+
+cat_nat <- within(ccs_re_nat, {   
+  year.cat <- NA 
+  year.cat[year == 2030] <- "2030"
+  year.cat[year == 2050] <- "2050"
+  } )
+
+cat_nat_wider <- cat_nat %>% 
+  pivot_wider(names_from = type, 
+              values_from = total)
+
+ggplot (data = cat_nat_wider, mapping = aes (x = `Renewable Energy`, 
+                                  y  = CCS, 
+                                  shape = model, 
+                                  color = year.cat))+
+  geom_point(aes(shape = model, color = year.cat), size = 2)+
+  scale_shape_manual(values = c(0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 12)) +
+  labs (title = "CCS vs RE in 2030 and 2050",
+        x = "Renewable Energy",
+        y = "CCS",
+        color = "Year",
+        shape = "Model")+
+  theme_bw()
+```
+
+**Using EMF37 national data, the total amount of DAC using Final Energy, Direct Air Capture in all models was graphed by model.**
+
+```{r, message = FALSE, echo = FALSE, warning = FALSE}
+r2_filt <-r2_data %>% 
+  filter (scenario == "NT.Ref" |
+          scenario == "0by50.Adv" |
+          scenario == "NT.Ref.R1" |
+          scenario == "NT.Ref.R2") %>% 
+  filter (year <= 2050) %>%
+  filter (region == "United States")
+```
+
+```{r, message = FALSE, echo = FALSE}
+DAC1 <- r2_data %>% 
+  filter (variable == "Final Energy|Direct Air Capture") %>%
+  filter (scenario == "NT.Ref.R2")  %>% 
+  filter (year <= 2050) %>%
+  filter (region == "United States")
+ggplot (data = DAC1, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  facet_wrap (~model)+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Final Energy, Direct Air Capture for NT.Ref.R2",
+        x = "Year",
+        y = "Final Energy|Direct Air Capture (EJ/yr)",
+        color = "Model")
+```
+
+```{r, message = FALSE, echo = FALSE}
+DAC2 <- r2_data %>% 
+  filter (variable == "Final Energy|Direct Air Capture") %>%
+  filter (scenario == "NT.Ref.R1")  %>% 
+  filter (year <= 2050) %>%
+  filter (region == "United States")
+ggplot (data = DAC2, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  facet_wrap (~model)+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Final Energy, Direct Air Capture for NT.Ref.R1",
+        x = "Year",
+        y = "Final Energy|Direct Air Capture (EJ/yr)",
+        color = "Model")
+```
+
+```{r, message = FALSE, echo = FALSE}
+DAC3 <- r2_filt %>% 
+  filter (variable == "Carbon Sequestration|Direct Air Capture|Net") %>%
+  filter (scenario == "NT.Ref.R2")  %>% 
+  filter (year <= 2050) %>%
+  filter (region == "United States")
+ggplot (data = DAC3, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  facet_wrap (~model)+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Direct Air Capture through Carbon Sequestration, Net for NT.Ref.R2",
+        x = "Year",
+        y = "Carbon Sequestration|Direct Air Capture|Net (EJ/yr)",
+        color = "Model")
+```
+
+```{r, message = FALSE, echo = FALSE}
+DAC4 <- r2_filt %>% 
+  filter (variable == "Carbon Sequestration|Direct Air Capture|Net")%>%
+  filter (scenario == "NT.Ref.R1")  %>% 
+  filter (year <= 2050) %>%
+  filter (region == "United States")
+ggplot (data = DAC4, mapping = aes (x = year, y = value, color = model))+
+  geom_line()+
+  facet_wrap (~model)+
+  theme_bw ()+
+  scale_color_brewer(palette = "Paired")+
+  theme(axis.text.x = element_text(angle = 90, hjust=1))+
+  labs (title = "Direct Air Capture through Carbon Sequestration, Net for NT.Ref.R1",
+        x = "Year",
+        y = "Carbon Sequestration|Direct Air Capture|Net (EJ/yr)",
+        color = "Model")
+```
